@@ -420,6 +420,46 @@ inline int nvme_cmd_rw(int opc, nvme_queue_t* ioq, int nsid,
 }
 
 /**
+ * NVMe submit a read write command. (Extended)
+ * @param   opc         op code
+ * @param   ioq         io queue
+ * @param   nsid        namespace
+ * @param   cid         command id
+ * @param   lba         startling logical block address
+ * @param   nb          number of blocks
+ * @param   prp1        PRP1 address
+ * @param   prp2        PRP2 address
+ * 
+ * @param   dtype       Directive Type (Flexible Data Placement: 0x2)
+ * @param   dspec       Directive Specific
+ * 
+ * @return  0 if ok else -1.
+ */
+inline int nvme_cmd_rw_ext(int opc, nvme_queue_t* ioq, int nsid,
+                       int cid, u64 lba, int nb, u64 prp1, u64 prp2, u16 dtype, u16 dspec)
+{
+    nvme_command_rw_t* cmd = &ioq->sq[ioq->sq_tail].rw;
+
+    memset(cmd, 0, sizeof (*cmd));
+    cmd->common.opc = opc;
+    cmd->common.cid = cid;
+    cmd->common.nsid = nsid;
+    cmd->common.prp1 = prp1;
+    cmd->common.prp2 = prp2;
+    cmd->slba = lba;
+    cmd->nlb = nb - 1;
+
+    nvme_command_rw_ext_t* cmd_ext = (nvme_command_rw_ext_t*)cmd;
+    cmd_ext->dtype = dtype;
+    cmd_ext->dspec = dspec;
+
+    DEBUG_FN("q=%d sqt=%d cid=%#x nsid=%d lba=%#lx nb=%d (%c) dt=%u ds=%u", ioq->id,
+             ioq->sq_tail, cid, nsid, lba, nb, opc == NVME_CMD_READ? 'R' : 'W', dtype, dspec);
+    nvme_submit_cmd(ioq);
+    return 0;
+}
+
+/**
  * NVMe submit a read command.
  * @param   ioq         io queue
  * @param   nsid        namespace
@@ -438,6 +478,27 @@ int nvme_cmd_read(nvme_queue_t* ioq, int nsid,
 
 /**
  * NVMe submit a write command.
+ * @param   ioq         io queue
+ * @param   nsid        namespace
+ * @param   cid         command id
+ * @param   lba         startling logical block address
+ * @param   nb          number of blocks
+ * @param   prp1        PRP1 address
+ * @param   prp2        PRP2 address
+ * 
+ * @param   dtype       Directive Type (Flexible Data Placement: 0x2)
+ * @param   dspec       Directive Specific
+ * 
+ * @return  0 if ok else -1.
+ */
+int nvme_cmd_write_ext(nvme_queue_t* ioq, int nsid,
+               int cid, u64 lba, int nb, u64 prp1, u64 prp2, u16 dtype, u16 dspec)
+{
+    return nvme_cmd_rw_ext(NVME_CMD_WRITE, ioq, nsid, cid, lba, nb, prp1, prp2, dtype, dspec);
+}
+
+/**
+ * NVMe submit a write command. (Extended)
  * @param   ioq         io queue
  * @param   nsid        namespace
  * @param   cid         command id

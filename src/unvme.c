@@ -465,8 +465,21 @@ int unvme_do_rw(unvme_queue_t* ioq, unvme_page_t* pa, int opc)
         }
     }
 
-    int err = nvme_cmd_rw(opc, ioq->nvq, ses->ns.id,
+    int err;
+    if(opc == NVME_CMD_WRITE && pa->data != NULL) {
+        // Fill FDP info
+        typedef struct {
+            u16 dtype;
+            u16 dspec;
+        } __attribute__((packed)) fdp_info_t;
+        fdp_info_t* fdp_info = (fdp_info_t*)pa->data;
+        err = nvme_cmd_rw_ext(opc, ioq->nvq, ses->ns.id,
+                              cid, pa->slba, pa->nlb, prp1, prp2,
+                              fdp_info->dtype, fdp_info->dspec);
+    } else {
+        err = nvme_cmd_rw(opc, ioq->nvq, ses->ns.id,
                           cid, pa->slba, pa->nlb, prp1, prp2);
+    }
 
     if (unvme_model != UNVME_MODEL_APC && !err) err = sem_post(&ses->tpc.sem);
 

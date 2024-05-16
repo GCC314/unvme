@@ -197,6 +197,24 @@ typedef struct _nvme_command_rw {
     u16                     elbatm;     ///< exp logical block app tag mask
 } nvme_command_rw_t;
 
+typedef struct _nvme_command_rw_ext {
+    nvme_command_common_t   common;     ///< common cdw 0
+    u64                     slba;       ///< starting LBA (cdw 10)
+    u16                     nlb;        ///< number of logical blocks
+    u16                     rsvd12 : 4; ///< reserved (in cdw 12)
+    u16                     dtype : 4;  ///< dtype (in cdw 12)
+    u16                     rsvd12_ : 2;///< reserved (in cdw 12)
+    u16                     prinfo : 4; ///< protection information field
+    u16                     fua : 1;    ///< force unit access
+    u16                     lr  : 1;    ///< limited retry
+    u8                      dsm;        ///< dataset management
+    u8                      rsvd13[1];  ///< reserved (in cdw 13)
+    u16                     dspec;      ///< dtype specific (in cdw 13)
+    u32                     eilbrt;     ///< exp initial block reference tag
+    u16                     elbat;      ///< exp logical block app tag
+    u16                     elbatm;     ///< exp logical block app tag mask
+} nvme_command_rw_ext_t;
+
 /// Admin command:  Delete I/O Submission & Completion Queue
 typedef struct _nvme_acmd_delete_ioq {
     nvme_command_common_t   common;     ///< common cdw 0
@@ -439,8 +457,10 @@ int nvme_acmd_delete_cq(nvme_queue_t* ioq);
 int nvme_acmd_delete_sq(nvme_queue_t* ioq);
 
 int nvme_cmd_rw(int opc, nvme_queue_t* ioq, int nsid, int cid, u64 lba, int nb, u64 prp1, u64 prp2);
+int nvme_cmd_rw_ext(int opc, nvme_queue_t* ioq, int nsid, int cid, u64 lba, int nb, u64 prp1, u64 prp2, u16 dtype, u16 dspec);
 int nvme_cmd_read(nvme_queue_t* ioq, int nsid, int cid, u64 lba, int nb, u64 prp1, u64 prp2);
 int nvme_cmd_write(nvme_queue_t* ioq, int nsid, int cid, u64 lba, int nb, u64 prp1, u64 prp2);
+int nvme_cmd_write_ext(nvme_queue_t* ioq, int nsid, int cid, u64 lba, int nb, u64 prp1, u64 prp2, u16 dtype, u16 dspec);
 
 int nvme_check_completion(nvme_queue_t* q, int* stat);
 int nvme_wait_completion(nvme_queue_t* q, int cid, int timeout);
