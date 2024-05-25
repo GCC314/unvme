@@ -307,7 +307,7 @@ int nvme_acmd_create_cq(nvme_queue_t* ioq, u64 prp, int ien)
     cmd->qid = ioq->id;
     cmd->qsize = ioq->size - 1;
     cmd->ien = ien;
-    cmd->iv = ioq->id;
+    cmd->iv = ien ? ioq->id : 0;
 
     DEBUG_FN("q=%d cid=%#x qs=%d ien=%d", ioq->id, cid, ioq->size, ien);
     nvme_submit_cmd(adminq);

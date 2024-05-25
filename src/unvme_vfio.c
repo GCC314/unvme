@@ -413,7 +413,7 @@ vfio_device_t* vfio_create(int pci)
         if (ioctl(dev->fd, VFIO_DEVICE_GET_REGION_INFO, &reg)) continue;
 
         DEBUG_FN("%x: region=%d flags=%#x resv=%u off=%#llx size=%#llx",
-                 pci, reg.index, reg.flags, reg.resv, reg.offset, reg.size);
+                 pci, reg.index, reg.flags, 0, reg.offset, reg.size);
 
         if (i == VFIO_PCI_CONFIG_REGION_INDEX) {
             __u8 config[256];

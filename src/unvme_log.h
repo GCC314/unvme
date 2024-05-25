@@ -47,6 +47,7 @@
 #define INFO_FN(fmt, arg...)  log_msg(0, "%s " fmt "\n", __func__, ##arg)
 #define ERROR(fmt, arg...)    log_msg(1, "ERROR: %s " fmt "\n", __func__, ##arg)
 
+#define UNVME_DEBUG
 #ifdef UNVME_DEBUG
     #define DEBUG             INFO
     #define DEBUG_FN          INFO_FN
@@ -73,7 +74,7 @@ void log_msg(int err, const char* fmt, ...);
  */
 static inline void hex_dump(void* buf, int len)
 {
-    unsigned char* b = buf;
+    unsigned char* b = (unsigned char*)buf;
     int i, k = 0, e = 44, t = 44;
     char ss[3906];
 
